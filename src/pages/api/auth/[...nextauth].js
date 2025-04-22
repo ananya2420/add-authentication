@@ -1,38 +1,34 @@
-import NextAuth from 'next/auth'
-import Provider from 'next-auth/providers';
-import { connectToDatabase } from '../../../../lib/db';
-import { verifyPassword } from '../../../../lib/auth';
-
-
-
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 export default NextAuth({
-
-    session:{
-        jwt:true,
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: {},
+        password: {},
+      },
+      async authorize(credentials) {
+        // Your custom auth logic
+        const user = { id: 1, name: 'Demo User', email: credentials.email };
+        if (user) return user;
+        return null;
+      },
+    }),
+  ],
+  secret: process.env.NEXTAUTH_SECRET, // required for encryption
+  session: {
+    strategy: 'jwt',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) token.user = user;
+      return token;
     },
-    providers:[
-        providers.Credentials({
-           async  authorize(credentials){
-               const client = await connectToDatabase();
-
-               const userCollection = client.db().collection('users');
-               const user = await userCollection.findOne({email: credentials.email})
-
-               if(!user){
-                throw new error("No user found!")
-                
-               }
-              const isValid= verifyPassword(credentials.password,user.password)
-
-              if(!isValid){
-                client.close();
-                throw new Error('could not login')
-              }
-              client.close();
-              return{email:user.email,}
-                
-           }
-        })
-    ]
+    async session({ session, token }) {
+      session.user = token.user;
+      return session;
+    },
+  },
 });
