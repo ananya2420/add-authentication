@@ -1,7 +1,6 @@
-// pages/api/user/change-password.js
+
 import { getSession } from "next-auth/react";
-//import { hashPassword, verifyPassword } from "../../../lib/auth";
-//import { connectToDatabase } from "../../../lib/db";
+
 import { hashPassword, verifyPassword } from "../../../../lib/auth";
 import { connectToDatabase } from "../../../../lib/db";
 
